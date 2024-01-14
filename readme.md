@@ -5,7 +5,7 @@
 [![GitHub stars](https://badgen.net/github/stars/V1li/H4X-Tools)](https://GitHub.com/V1li/H4X-Tools/stargazers/)
 [![GitHub forks](https://badgen.net/github/forks/V1li/H4X-Tools)](https://GitHub.com/V1li/H4X-Tools/network/)
 
-Toolkit for scraping, OSINT and more.
+Web version of H4X-Tools that runs on Flask.
 
 > [!IMPORTANT]
 > Please make sure to install `python-devel` package if you are on Linux or `python-dev` if you are on Windows, otherwise H4X-Tools will not build in the 3.12 version of Python! Please refer to [this](https://github.com/V1li/H4X-Tools/issues/17) issue.
@@ -15,8 +15,6 @@ Submit feature requests and bugs in the [issues](https://github.com/V1li/H4X-Too
 If you want to help with the development, follow the instructions in [contributing](CONTRIBUTING.md) and simply open a pull request. 
 You can also [donate](https://vili.dev/#donate) to keep the project alive and me motivated!
 
-
-![](https://github.com/V1li/H4X-Tools/blob/master/img/gui-v0.2.15plus.png)
 
 # Current tools
 > [!WARNING]
@@ -81,6 +79,8 @@ Setup files will automatically build the tool as an executable.
 You can also run the tool using `python h4xtools.py` in the terminal.
 
 Also, dependencies can be installed manually using `pip install -r requirements.txt`.
+
+After running the web version of the tool, go to http://127.0.0.1:5000 to use it.
 
 # License
 >[This source code is under the GNU General Public License, version 3.](https://www.gnu.org/licenses/gpl-3.0.txt)

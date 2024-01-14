@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
+    <title>H4X-Tools | Web {{ version }}</title>
+</head>
+<body>
+<div class="container">
+    <pre>
+
+ ▄ .▄▐▄• ▄ ▄▄▄▄▄            ▄▄▌  .▄▄ ·
+██▪▐█ █▌█▌▪•██  ▪     ▪     ██•  ▐█ ▀.
+██▀▐█ ·██·  ▐█.▪ ▄█▀▄  ▄█▀▄ ██▪  ▄▀▀▀█▄
+██▌▐▀▪▐█·█▌ ▐█▌·▐█▌.▐▌▐█▌.▐▌▐█▌▐▌▐█▄▪▐█
+▀▀▀ ·•▀▀ ▀▀ ▀▀▀  ▀█▄▀▪ ▀█▄▀▪.▀▀▀  ▀▀▀▀
+{{ version }} | by <a href="https://vili.dev/" target="_blank">Vili</a>
+    </pre>
+    <p>Open source toolkit for scraping, OSINT and more.</p>
+    <p>Note, don't use this tool for any <i>illegal</i> activities. Thank you.</p>
+    <br>
+    <hr>
+    <br>
+    <h2>Available Tools</h2>
+
+    <ul class="tools-list">
+        <li><a href="{{ url_for('ig_scrape_route') }}">Instagram Scraper</a></li>
+        <!-- Add more tools here -->
+    </ul>
+</div>
+
+</body>
+</html>

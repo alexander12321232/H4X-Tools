@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" type="text/css">
+    <title>H4X-Tools | IgScrape</title>
+</head>
+<body>
+<a href="./">Back to home</a>
+<div class="container">
+    <h1>H4X-Tools / IgScrape</h1>
+
+    {% if scraped_data %}
+    <form action="/ig_scrape" class="ig-scrape-form" method="POST">
+        {% if logged_in %}
+        <div class="input-group">
+            <label for="username">Your Instagram Username:</label>
+            <input id="username" name="username" required type="text">
+        </div>
+        <div class="input-group">
+            <label for="password">Your Instagram Password:</label>
+            <input id="password" name="password" required type="password">
+        </div>
+        {% endif %}
+        <div class="input-group">
+            <label for="target">Target Instagram Username:</label>
+            <input id="target" name="target" required type="text">
+        </div>
+
+        <button type="submit">Scrape</button>
+    </form>
+
+    {% if result_message %}
+    <p class="result-message">{{ result_message }}</p>
+    {% endif %}
+
+    <br>
+    <hr>
+    <br>
+
+    <div class="scraped-data">
+        <p><strong>Profile URL:</strong> <a href="{{ scraped_data.profile_url }}" target="_blank">here.</a></p>
+        <p><strong>Profile Pic URL:</strong> <a href="{{ scraped_data.profile_pic_url }}" target="_blank">here.</a></p>
+        <p><strong>Username:</strong> <code>{{ scraped_data.username }}</code></p>
+        <p><strong>Full Name:</strong> <code>{{ scraped_data.full_name }}</code></p>
+        <p><strong>ID:</strong> <code>{{ scraped_data.id }}</code></p>
+        <p><strong>Biography:</strong> <code>{{ scraped_data.biography }}</code></p>
+        <p><strong>External URL:</strong> <code>{{ scraped_data.external_url }}</code></p>
+        <p><strong>Is Private:</strong> <code>{{ scraped_data.is_private }}</code></p>
+        <p><strong>Is Verified:</strong> <code>{{ scraped_data.is_verified }}</code></p>
+        <p><strong>Is Business:</strong> <code>{{ scraped_data.is_business }}</code></p>
+        <p><strong>Business Category:</strong> <code>{{ scraped_data.business_category }}</code></p>
+
+        {% if scraped_data.is_business %}
+        <p><strong>Can Direct Message:</strong> <code>{{ scraped_data.can_direct_message }}</code></p>
+        <p><strong>Email:</strong> <code>{{ scraped_data.email }}</code></p>
+        <p><strong>Phone Number:</strong> <code>{{ scraped_data.phone_number }}</code></p>
+        {% endif %}
+
+        <p><strong>Total Posts:</strong> <code>{{ scraped_data.total_posts }}</code></p>
+        <p><strong>Followers:</strong> <code>{{ scraped_data.followers }}</code></p>
+        <p><strong>Following:</strong> <code>{{ scraped_data.following }}</code></p>
+
+        <h3>Chaining Suggestions:</h3>
+        <ul>
+            {% for suggestion in scraped_data.chaining_suggestions %}
+            <li><code>{{ suggestion.username }}</code> - <code>{{ suggestion.full_name }}</code> ({{ suggestion.pk }})
+            </li>
+            {% endfor %}
+        </ul>
+
+        <p><strong>Media Count:</strong> <code>{{ scraped_data.media_count }}</code></p>
+        <p><strong>Total IGTV Videos:</strong> <code>{{ scraped_data.total_igtv_videos }}</code></p>
+    </div>
+    {% endif %}
+
+    {% if error_message %}
+    <p class="error-message">{{ error_message }}</p>
+    {% endif %}
+</div>
+</body>
+</html>

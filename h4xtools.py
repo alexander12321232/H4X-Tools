@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
- Copyright (c) 2023. Vili and contributors.
+ Copyright (c) 2024. Vili and contributors.
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,12 +17,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  """
 
-import os
-import time
-import socket
-import json
-from getpass import getpass
-from colorama import Fore
+from flask import Flask, render_template, request
 from utils import (
     email_search,
     search_username,
@@ -45,334 +40,34 @@ from utils import (
 )
 from helper import printer
 
-
-if os.name == "nt":
-    os.system("cls")
-    os.system("title H4X-Tools")
-if os.name == "posix":
-    os.system("clear")
-
-VERSION = "0.2.15+"
+app = Flask(__name__)
+app.template_folder = "web/templates"
+app.static_folder = 'web/static'
+VERSION = "dev.1"
 
 
-def internet_check() -> None:
-    """
-    Checks if the internet connection is available.
+@app.route('/')
+def index():
+    return render_template('index.html', version=VERSION)
 
-    :return: None
-    """
+
+@app.route('/ig_scrape')
+def ig_scrape_route():
     try:
-        socket.create_connection(("gnu.org", 80))
-        printer.success("Internet Connection is Available..!")
-    except OSError:
-        printer.warning("Internet Connection is Unavailable..!")
+        username = request.form['username']
+        password = request.form['password']
+        target = request.form['target']
+
+        scraper = ig_scrape.Scrape(username, password, target)
+        result_message = f"IG Scrape for {target} completed successfully."
+        scraped_data = scraper.scraped_data
+
+        return render_template('igscrape.html', result_message=result_message, scraped_data=scraped_data)
+
+    except Exception as e:
+        error_message = f"Error during IG scrape: {e}"
+        return render_template('igscrape.html', error_message=error_message)
 
 
-def print_banner() -> None:
-    """
-    Prints the banner of H4X-Tools.
-    """
-    print(Fore.CYAN + f"""
- ▄ .▄▐▄• ▄ ▄▄▄▄▄            ▄▄▌  .▄▄ · 
-██▪▐█ █▌█▌▪•██  ▪     ▪     ██•  ▐█ ▀. 
-██▀▐█ ·██·  ▐█.▪ ▄█▀▄  ▄█▀▄ ██▪  ▄▀▀▀█▄
-██▌▐▀▪▐█·█▌ ▐█▌·▐█▌.▐▌▐█▌.▐▌▐█▌▐▌▐█▄▪▐█
-▀▀▀ ·•▀▀ ▀▀ ▀▀▀  ▀█▄▀▪ ▀█▄▀▪.▀▀▀  ▀▀▀▀ v{VERSION} 
-~~by Vili (https://vili.dev)
-    """)
-
-
-def about() -> None:
-    """
-    Prints the about text.
-    """
-    print(Fore.GREEN)
-    printer.nonprefix(f"""
-H4X-Tools, toolkit for scraping, OSINT and more.
-Completely open source and free to use! Feel free to contribute.
-Repo: https://github.com/vil/h4x-tools
-NOTE! THIS TOOL IS ONLY FOR EDUCATIONAL PURPOSES, DON'T USE IT ILLEGALLY!
-Version: {VERSION}
-    """)
-
-
-def donate() -> None:
-    """
-    Prints the donate text.
-    """
-    printer.nonprefix(f"""{Fore.GREEN}
-If you want to support me and my work, you can donate to these addresses: \n
-| BCH: bitcoincash:qp58pmwsfq4rp0vvafjrj2uenp8edmftycvvh8wmlg
-| BTC: bc1qwgeuvc25g4hrylmgcup4yzavt5tl8pk93auj34
-| ETH: 0x4433D6d7d31F38c63E0e6eA31Ffac2125B618142
-| XMR: 42fC3fZDPeMMqnMt7hqgdAJonJQtzshc9C5R9PMAFBkwDu36xwAKDW44J42JPLtDjy337SVkbG2Ceir2PhsvDYeS4T5BaPT
-Or support me on GitHub: https://github.com/sponsors/vil
-  
-Every single donation is appreciated! <3
-    """)
-
-
-def print_menu() -> None:
-    """
-    Prints the main menu of H4X-Tools.
-    """
-    max_option_length = max(len(value.__name__.replace('handle_', '').replace('_', ' ').title()) for value in MENU_OPTIONS.values())
-
-    for i, (key, value) in enumerate(MENU_OPTIONS.items(), start=1):
-        option_name = value.__name__.replace('handle_', '').replace('_', ' ').title()
-        print(f"[{key}] {option_name.ljust(max_option_length)}", end='\t')
-
-        # Break line every two options or at the end
-        if i % 2 == 0 or i == len(MENU_OPTIONS):
-            print()
-
-    print("\n")
-
-
-def handle_exit() -> None:
-    """
-    Kills the program.
-    """
-    printer.warning("Exiting...")
-    printer.info("Thanks for using H4X-Tools! Remember to star this on GitHub! \n -Vili")
-    time.sleep(1)
-    print(Fore.RESET)
-    exit()
-
-
-def handle_ig_scrape() -> None:
-    """
-    Handles the IG Scrape util.
-
-    Note, you have to log in to Instagram in order to use this util.
-    """
-    printer.warning("NOTE! You have to log in to Instagram everytime in order to use this util.")
-    printer.warning("I suggest you to create a new account for this purpose.")
-    # Check if saved credentials exist
-    temp_dir = '/tmp'
-    credentials_file = os.path.join(temp_dir, "dontlookhere.json")
-    if os.name == "posix" and os.path.exists(credentials_file):
-        with open(credentials_file, "r") as file:
-            credentials = json.load(file)
-        username = credentials["username"]
-        password = credentials["password"]
-        printer.info(f"Using saved credentials for '{username}'")
-    else:
-        username = str(input("Your username : "))
-        password = getpass("Your password : ")
-    target = str(input("Enter a target username : \t")).replace(" ", "_")
-    ig_scrape.Scrape(username, password, target)
-    time.sleep(1)
-
-
-def handle_web_search() -> None:
-    """
-    Handles the Web Search util.
-    """
-    query = str(input("Search query : \t"))
-    websearch.Search(query)
-
-
-def handle_phone_lookup() -> None:
-    """
-    Handles the Phone number Lookup util.
-    """
-    no = str(input("Enter a phone-number with country code : \t"))
-    phonenumber_lookup.LookUp(no)
-
-
-def handle_ip_lookup() -> None:
-    """
-    Handles the IP/Domain Lookup util.
-    """
-    ip = str(input("Enter a IP address OR domain : \t"))
-    ip_lookup.Lookup(ip)
-
-
-def handle_username_search() -> None:
-    """
-    Handles the Username Search util.
-    """
-    username = str(input("Enter a Username : \t")).replace(" ", "_")
-    search_username.Search(username)
-
-
-def handle_email_search() -> None:
-    """
-    Handles the Email Search util.
-
-    Windows support is not available yet.
-    """
-    if os.name == "nt":
-        printer.warning(f"Sorry, this currently only works on Linux machines :(")
-    else:
-        email = str(input("Enter a email address : \t"))
-        email_search.Holehe(email)
-
-
-def handle_port_scanner() -> None:
-    """
-    Handles the Port Scanner util.
-    """
-    ip = str(input("Enter a IP address OR domain : \t"))
-    port_range = int(input("Enter number of ports to scan : \t"))
-    port_scanner.Scan(ip, port_range)
-
-
-def handle_webhook_spammer() -> None:
-    """
-    Handles the Webhook Spammer util.
-    """
-    url = str(input("Enter a webhook url : \t"))
-    amount = int(input("Enter a amount of messages : \t"))
-    message = str(input("Enter a message : \t"))
-    username = str(input("Enter a username : \t"))
-    throttle = int(input("Enter time of sleep (seconds) : \t"))
-    webhook_spammer.Spam(url, amount, message, username, throttle)
-
-
-def handle_whois_lookup() -> None:
-    """
-    Handles the WhoIs Lookup util.
-    """
-    domain = str(input("Enter a domain : \t"))
-    whois_lookup.Lookup(domain)
-
-
-def handle_sms_bomber() -> None:
-    """
-    Handles the SMS Bomber util.
-
-    Currently only works for US numbers.
-    """
-    number = input("Enter the target phone number (with country code): \t")
-    count = input("Enter the number of SMS to send: \t")
-    throttle = input("Enter the throttle time (in seconds): \t")
-    smsbomber.SMSBomber(number, count, throttle)
-
-
-def handle_fake_info_generator() -> None:
-    """
-    Handles the Fake Info Generator util.
-    """
-    fake_info_generator.Generate()
-
-
-def handle_web_scrape() -> None:
-    """
-    Handles the Web Scrape util.
-    """
-    url = str(input(f"Enter a url : \t"))
-    web_scrape.Scrape(url)
-
-
-def handle_wifi_finder() -> None:
-    """
-    Handles the Wi-Fi Finder util.
-    """
-    printer.info(f"Scanning for nearby Wi-Fi networks...")
-    wifi_finder.Scan()
-
-
-def handle_wifi_password_getter() -> None:
-    """
-    Handles the Wi-Fi Password Getter util.
-    """
-    printer.info(f"Scanning for locally saved Wi-Fi passwords...")
-    wifi_password_getter.Scan()
-
-
-def handle_dir_buster() -> None:
-    """
-    Handles the Dir Buster util.
-    """
-    url = input(f"Enter a domain : \t")
-    dirbuster.Scan(url)
-
-
-def handle_local_accounts_getter() -> None:
-    """
-    Handles the Local Accounts Getter util.
-    """
-    printer.info(f"Scanning for local accounts...")
-    local_accounts_getter.Scan()
-
-
-def handle_caesar_cipher() -> None:
-    """
-    Handles the Caesar Cipher util.
-    """
-    message = input("Enter a text to cipher/decipher : \t")
-    shift = int(input("Enter a number of shifts (0 to 25) : \t"))
-    if shift < 0 or shift > 25:
-        printer.error("Invalid shift number, please choose a number between 0 and 25..!")
-    mode = str(input("Enter a mode (encrypt/decrypt/bruteforce) : \t"))
-    caesar_cipher.CaesarCipher(message, shift, mode)
-
-
-def handle_basexx() -> None:
-    """
-    Handles the BaseXX util.
-    """
-    message = input("Enter a text to encode/decode : \t")
-    mode = str(input("Enter a mode (encode/decode) : \t"))
-    encoding = str(input("Enter a encoding (64/32/16) : \t"))
-    basexx.BaseXX(message, mode, encoding)
-
-
-MENU_OPTIONS = {
-    "1": handle_ig_scrape,
-    "2": handle_web_search,
-    "3": handle_phone_lookup,
-    "4": handle_ip_lookup,
-    "5": handle_username_search,
-    "6": handle_email_search,
-    "7": handle_port_scanner,
-    "8": handle_webhook_spammer,
-    "9": handle_whois_lookup,
-    "10": handle_sms_bomber,
-    "11": handle_fake_info_generator,
-    "12": handle_web_scrape,
-    "13": handle_wifi_finder,
-    "14": handle_wifi_password_getter,
-    "15": handle_dir_buster,
-    "16": handle_local_accounts_getter,
-    "17": handle_caesar_cipher,
-    "18": handle_basexx,
-    "19": about,
-    "20": donate,
-    "21": handle_exit
-}
-
-
-def main() -> None:
-    """
-    Main function.
-    """
-    internet_check()
-    time.sleep(1)
-
-    if os.name == "nt":
-        printer.warning("Windows system detected..! Expect issues...")
-        time.sleep(1)
-
-    while True:
-        print_banner()
-        time.sleep(1)
-        print_menu()
-        user_input = input("[$] Select your option ~> \t")
-
-        # Check if the user wants to exit
-        if user_input.lower() in {"quit", "exit", "q", "kill"}:
-            handle_exit()
-
-        if user_input in MENU_OPTIONS:
-            MENU_OPTIONS[user_input]()  # Call the corresponding function based on the selected option
-            time.sleep(3)  # Sleep so the user has time to see results.
-        else:
-            printer.error("Invalid option!")
-            time.sleep(2)
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(debug=True)
