@@ -51,7 +51,7 @@ def index():
     return render_template('index.html', version=VERSION)
 
 
-@app.route('/ig_scrape')
+@app.route('/ig_scrape', methods=['GET', 'POST'])
 def ig_scrape_route():
     try:
         username = request.form['username']
@@ -59,10 +59,11 @@ def ig_scrape_route():
         target = request.form['target']
 
         scraper = ig_scrape.Scrape(username, password, target)
-        result_message = f"IG Scrape for {target} completed successfully."
+        result_message = f"IG Scrape for '{target}' completed successfully."
         scraped_data = scraper.scraped_data
 
-        return render_template('igscrape.html', result_message=result_message, scraped_data=scraped_data)
+        return render_template('igscrape.html', result_message=result_message,
+                               scraped_data=scraped_data)
 
     except Exception as e:
         error_message = f"Error during IG scrape: {e}"

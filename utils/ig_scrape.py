@@ -37,14 +37,12 @@ class Scrape:
     def __init__(self, username, password, target):
         self.username = username
         self.password = password
-        self.logged_in = None
         self.scraped_data = None
 
         temp_dir = '/tmp'
         credentials_file = os.path.join(temp_dir, "dontlookhere.json")
         if os.name == "posix" and not os.path.exists(credentials_file):
             self.save_credentials(username, password)
-            self.logged_in = True
 
         try:
             api = Client(username, password)
